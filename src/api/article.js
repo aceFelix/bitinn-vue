@@ -9,3 +9,7 @@ export const getArticleListService = () => {
     return request.get('/article')
 }
 
+// 提供调用添加文章分类的函数
+export const addCategoryService = (categoryModel) => {
+    return request.post('/category',categoryModel)
+}
