@@ -58,7 +58,11 @@ const register = async() => {
     // alert(res.msg ? res.msg : '注册成功!')
     ElMessage.success(res.msg ? res.msg : '注册成功!')
 }
-
+// 导入useRouter
+import { useRouter } from 'vue-router'
+const router = useRouter()
+// 导入useTokenStore
+import { useTokenStore } from '@/stores/token'
 /* 登录 */
 // 定义数据模型，用于数据绑定,直接复用注册数据模型
 // 定义登录接口
@@ -70,7 +74,11 @@ const login = async() => {
         alert('登录失败!')
     } */
     // alert(res.msg ? res.msg : '登录成功!')
-    ElMessage.success(res.msg ? res.msg : '注册成功!')
+    ElMessage.success(res.msg ? res.msg : '登录成功!')
+    // 把得到的token存储到pinia中
+    useTokenStore().setToken(res.data)
+    // 登录成功后，跳转到首页
+    router.push('/')
 }
 
 // 定义函数，清空注册数据模型的数据
