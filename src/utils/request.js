@@ -23,11 +23,12 @@ instance.interceptors.request.use(
     }
 )
 
+import router from '@/router'; 
 // 添加响应拦截器
 instance.interceptors.response.use(
-    // 判断业务状态码
     res=>{
-        if(res.data.code==0){
+        // 判断业务状态码
+        if(res.data.code===0){
             return res.data;
         }else{
             // alert(res.data.msg?res.data.msg:'服务异常');
@@ -35,10 +36,17 @@ instance.interceptors.response.use(
         }
     },
     err=>{
-        // alert('服务异常');
-        ElMessage.error('服务异常');
+        // 判断响应状态码，如果为401，则提示未登录，并跳转到登录页
+        if(err.response.status===401){
+            ElMessage.error('未登录');
+            router.push('/login');
+        }else{
+            // alert('服务异常');
+            ElMessage.error('服务异常');
+        }
         return Promise.reject(err);  // 异步的状态转化成失败的状态
     }
 )
 
 export default instance;
+
