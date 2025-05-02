@@ -10,7 +10,8 @@ import router from '@/router'
 import { createPinia } from 'pinia'
 // 导入persist插件
 import { createPersistedState } from 'pinia-plugin-persistedstate'
-
+// 导入中文语言包
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 const pinia = createPinia()
 pinia.use(createPersistedState())
 
@@ -18,4 +19,5 @@ createApp(App)
 .use(pinia)
 .use(router)
 .use(ElementPlus)
+.usere(ElementPlus,{locale:zhCn})
 .mount('#app')

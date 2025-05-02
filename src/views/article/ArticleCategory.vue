@@ -28,7 +28,7 @@ const categorys = ref([
     }
 ])
 // 导入getArticleListService()
-import{ getArticleListService, addCategoryService } from '@/api/article.js'
+import{ getArticleListService, addCategoryService, updateCategoryService, deleteCategoryService } from '@/api/article.js'
 // 声明异步函数
 const getCategorys = async () => {
     let res = await getArticleListService()
@@ -80,6 +80,54 @@ const showDialog = (row) => {
     categoryModel.value.id = row.id
 }
 
+// 调用后台接口完成修改分类
+    const updateCategory = async() =>{
+        let res = await updateCategoryService(categoryModel.value)
+        ElMessage.success(res.message? res.message:'修改成功')
+        //隐藏弹窗
+        dialogVisible.value = false
+        //刷新数据，再次访问后台接口，查询所有分类
+        getCategorys()
+    }  
+    
+// 点击添加分类时清空模型的数据
+const clearCategoryModel = () => {
+    categoryModel.value.categoryName = ''
+    categoryModel.value.categoryAlias = ''
+}
+
+import { ElMessage, ElMessageBox } from 'element-plus'
+// 调用后台接口完成删除分类
+const deleteCategory = (row) => {
+    // 提示用户 确认框
+    ElMessageBox.confirm(
+    '确认删除该分类信息吗?',
+    '确认删除',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+    .then(async() => {
+        // 调用后台接口完成删除分类
+        let res = await deleteCategoryService(row.id)
+        // 刷新数据，再次访问后台接口，查询所有分类
+        getCategorys()
+      ElMessage({
+        type: 'success',
+        message: '删除成功',
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消删除',
+      })
+    })
+}
+
+
 </script>
 <template>
     <el-card class="page-container">
@@ -87,7 +135,7 @@ const showDialog = (row) => {
             <div class="header">
                 <span>文章分类</span>
                 <div class="extra">
-                    <el-button type="primary" @click="dialogVisible = true" title="添加分类">添加分类</el-button>
+                    <el-button type="primary" @click="dialogVisible = true; title='添加分类'; clearCategoryModel()">添加分类</el-button>
                 </div>
             </div>
         </template>
@@ -99,7 +147,7 @@ const showDialog = (row) => {
                 <!-- eslint-disable-next-line vue/no-unused-vars -->
                 <template #default="row">
                     <el-button :icon="Edit" circle plain type="primary" @click="showDialog(row)"></el-button>
-                    <el-button :icon="Delete" circle plain type="danger"></el-button>
+                    <el-button :icon="Delete" circle plain type="danger" @click="deleteCategory(row)"></el-button>
                 </template>
             </el-table-column>
             <template #empty>
@@ -120,7 +168,7 @@ const showDialog = (row) => {
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="dialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="addCategory"> 确认 </el-button>
+                    <el-button type="primary" @click="title=='添加分类'? addCategory():updateCategory()"> 确认 </el-button>
                 </span>
             </template>
         </el-dialog>
