@@ -25,3 +25,8 @@ export const userLoginService = (loginData) => {
 export const userInfoService = () => {
     return request.get('/user/info')
 }
+
+// 修改个人信息
+export const userInfoUpdateService = (userInfo)=>{
+    return request.put('/user/update',userInfo)
+}
