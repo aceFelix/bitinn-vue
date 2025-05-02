@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { userInfoStore } from '@/stores/user.js';
-const userInfoStore = useUserInfoStore()
+const userInfoStore = userInfoStore()
 const userInfo = ref({...userInfoStore.info})
 const rules = {
     nickname: [
