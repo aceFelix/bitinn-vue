@@ -1,3 +1,8 @@
+<script setup>
+</script>
+
 <template>
-    重置密码
+  <div class="page">
+    <h2>重置密码</h2>
+  </div>
 </template>

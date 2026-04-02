@@ -1,36 +1,53 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useTokenStore } from '@/stores/token'
 
-// 导入页面视图组件
-import LoginVue from '@/views/Login.vue'
-import LayoutVue from '@/views/Layout.vue';
-// 导入子路由视图组件
+import LoginVue from '@/views/login/Login.vue'
+import HomeVue from '@/views/Home.vue'
+import LayoutVue from '@/views/login/Layout.vue'
 import ArticleCategoryVue from '@/views/article/ArticleCategory.vue'
 import ArticleManageVue from '@/views/article/ArticleManage.vue'
+import StartCreateVue from '@/views/article/StartCreate.vue'
+import ArticleEditVue from '@/views/article/ArticleEdit.vue'
 import UserAvatarVue from '@/views/user/UserAvatar.vue'
 import UserInfoVue from '@/views/user/UserInfo.vue'
 import UserResetPasswordVue from '@/views/user/UserResetPassword.vue'
-// 定义路由关系
+
 const routes = [
-    {path: '/login',component: LoginVue},
-    {path: '/',component: LayoutVue,
-        // 路由重定向
-        redirect:'/article/manage',
-        // 嵌套子路由
-        children:[
-            {path: '/article/category',component: ArticleCategoryVue},
-            {path: '/article/manage',component: ArticleManageVue},
-            {path: '/user/avatar',component: UserAvatarVue},
-            {path: '/user/info',component: UserInfoVue},
-            {path: '/user/resetPassword',component: UserResetPasswordVue}
-        ]
-    }
+  { path: '/login', component: LoginVue },
+  { path: '/', component: HomeVue },
+  { path: '/create', component: StartCreateVue },
+  { path: '/article/edit', component: ArticleEditVue },
+  {
+    path: '/admin',
+    component: LayoutVue,
+    redirect: '/admin/article/manage',
+    children: [
+      { path: '/admin/article/category', component: ArticleCategoryVue },
+      { path: '/admin/article/manage', component: ArticleManageVue },
+      { path: '/admin/user/avatar', component: UserAvatarVue },
+      { path: '/admin/user/info', component: UserInfoVue },
+      { path: '/admin/user/resetPassword', component: UserResetPasswordVue },
+    ],
+  },
 ]
 
-// 创建路由器实例并传递 `routes` 配置
 const router = createRouter({
-    history: createWebHistory(),
-    routes
+  history: createWebHistory(),
+  routes,
 })
 
-// 导出路由
+router.beforeEach((to) => {
+  if (import.meta.env.DEV) {
+    return true
+  }
+
+  const tokenStore = useTokenStore()
+
+  if (to.path === '/login') {
+    return tokenStore.token ? '/' : true
+  }
+
+  return tokenStore.token ? true : '/login'
+})
+
 export default router
