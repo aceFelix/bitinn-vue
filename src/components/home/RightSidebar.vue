@@ -82,9 +82,8 @@ const followUser = (user) => {
 
 <style scoped lang="scss">
 .sidebar-right {
-  position: sticky;
-  top: 84px;
-  height: fit-content;
+  height: 100%;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -98,6 +97,13 @@ const followUser = (user) => {
     box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
     transform: translateY(-2px);
   }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .card {
@@ -193,16 +199,18 @@ const followUser = (user) => {
   .btn-follow {
     padding: 6px 12px;
     background: transparent;
-    border: none;
+    border: 1px solid #F97316;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    
+
     &:hover {
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
       transform: translateY(-2px);
+      background: #F97316;
+      color: white;
     }
   }
 }
@@ -239,21 +247,24 @@ const followUser = (user) => {
   flex-wrap: wrap;
   gap: 12px;
   padding: 16px;
-  
+
   a {
     font-size: 12px;
     text-decoration: none;
     transition: color 0.2s;
-    
+    color: #1a1a1a;
+
     &:hover {
       text-decoration: underline;
+      color: #F97316;
     }
   }
-  
+
   .copyright {
     width: 100%;
     font-size: 12px;
     margin-top: 8px;
+    color: #1a1a1a;
   }
 }
 </style>

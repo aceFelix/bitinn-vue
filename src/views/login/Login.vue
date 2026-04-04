@@ -16,7 +16,16 @@ import AuthForm from '@/components/login/AuthForm.vue'
 <style scoped lang="scss">
 .auth-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+</style>
+
+<style>
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 </style>

@@ -208,6 +208,11 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
   z-index: 1000;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+  }
 }
 
 .header-left {
@@ -234,7 +239,8 @@ onUnmounted(() => {
   }
 
   .brand-name {
-    text-shadow: 0 0 10px rgba(53, 146, 196, 0.5);
+    text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+    color: #F97316;
   }
 }
 
@@ -247,6 +253,9 @@ onUnmounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  border: 1px solid #F97316;
+  border-radius: 6px;
+  background: transparent;
 
   svg {
     width: 16px;
@@ -254,7 +263,14 @@ onUnmounted(() => {
   }
 
   &:hover {
-    box-shadow: 0 0 0 3px rgba(53, 146, 196, 0.2);
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+    transform: translateY(-2px);
+    background: #F97316;
+    color: white;
+
+    svg {
+      stroke: white;
+    }
   }
 }
 
@@ -273,6 +289,9 @@ onUnmounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  border: 1px solid #F97316;
+  border-radius: 6px;
+  background: transparent;
 
   svg {
     width: 16px;
@@ -280,7 +299,14 @@ onUnmounted(() => {
   }
 
   &:hover {
-    box-shadow: 0 0 0 3px rgba(53, 146, 196, 0.2);
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+    transform: translateY(-2px);
+    background: #F97316;
+    color: white;
+
+    svg {
+      stroke: white;
+    }
   }
 }
 
@@ -289,12 +315,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 6px;
   color: #1a1a1a;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  border: 1px solid #F97316;
+  background: transparent;
 
   svg {
     width: 16px;
@@ -302,9 +330,14 @@ onUnmounted(() => {
   }
 
   &:hover {
+    background: #F97316;
     color: white;
-    box-shadow: 0 0 0 3px rgba(53, 146, 196, 0.3);
-    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+    transform: translateY(-2px);
+
+    svg {
+      stroke: white;
+    }
   }
 }
 
@@ -324,7 +357,7 @@ onUnmounted(() => {
 // 标题区域
 .title-section {
   position: relative;
-  
+
   .title-input {
     width: 100%;
     padding: 16px 80px 16px 20px;
@@ -333,10 +366,13 @@ onUnmounted(() => {
     font-weight: 600;
     transition: all 0.2s;
     box-sizing: border-box;
+    border: 1px solid transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 3px rgba(53, 146, 196, 0.2);
+      border-color: #F97316;
+      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.25);
     }
   }
 
@@ -355,6 +391,25 @@ onUnmounted(() => {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+
+  &:hover,
+  &:focus-within {
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.25);
+  }
+
+  :deep(.vditor-toolbar) {
+    .vditor-toolbar__item {
+      button:hover,
+      &--current > button {
+        color: #F97316;
+
+        svg {
+          color: #F97316;
+        }
+      }
+    }
+  }
 }
 
 .vditor-container {

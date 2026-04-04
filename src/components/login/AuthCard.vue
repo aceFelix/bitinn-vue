@@ -22,7 +22,5 @@
   padding: 32px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   transition: all 0.3s;
-  max-height: 90vh;
-  overflow-y: auto;
 }
 </style>

@@ -250,14 +250,27 @@ const openMessages = () => {
       height: 20px;
     }
     
+    svg {
+      stroke: #1a1a1a;
+      transition: stroke 0.2s;
+    }
+
     &:hover {
       box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
       transform: translateY(-2px);
+
+      svg {
+        stroke: #F97316;
+      }
     }
 
     &:active {
       box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
       transform: translateY(-2px);
+
+      svg {
+        stroke: #F97316;
+      }
     }
     
     .message-badge {
@@ -305,6 +318,9 @@ const openMessages = () => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 84px 24px 24px;
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 // 响应式设计
@@ -317,12 +333,8 @@ const openMessages = () => {
 @media (max-width: 992px) {
   .main-content {
     grid-template-columns: 1fr;
-  }
-  
-  .sidebar-left,
-  .sidebar-right {
-    position: static;
-    display: none;
+    height: auto;
+    overflow: visible;
   }
   
   .nav-search {

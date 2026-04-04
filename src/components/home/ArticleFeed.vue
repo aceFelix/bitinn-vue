@@ -71,7 +71,7 @@ const articles = ref([
 ])
 
 // 当前选中的排序方式
-const currentSort = ref('latest')
+const currentSort = ref('recommend')
 const sortOptions = [
   { value: 'recommend', label: '推荐' },
   { value: 'latest', label: '最新' },
@@ -172,9 +172,11 @@ const loadMore = () => {
   </section>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
 .content-feed {
   min-width: 0;
+  height: 100%;
+  overflow-y: auto;
   border: 3px solid none;
   border-radius: 12px;
   padding: 16px;
@@ -184,6 +186,23 @@ const loadMore = () => {
   &:hover {
     box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
     transform: translateY(-2px);
+  }
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(249, 115, 22, 0.3);
+    border-radius: 4px;
+
+    &:hover {
+      background: #F97316;
+    }
   }
 }
 
@@ -211,16 +230,21 @@ const loadMore = () => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     transform: translateY(-2px);
   }
-  
+
+  &:active {
+    color: #F97316;
+  }
+
   &.active {
     font-weight: 600;
     box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
     transform: translateY(-2px);
+    color: #F97316;
   }
 }
 

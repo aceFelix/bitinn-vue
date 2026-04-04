@@ -85,9 +85,8 @@ const setActiveNav = (id) => {
 
 <style scoped lang="scss">
 .sidebar-left {
-  position: sticky;
-  top: 84px;
-  height: fit-content;
+  height: 100%;
+  overflow-y: auto;
   border-radius: 12px;
   padding: 16px;
   transition: all 0.2s;
@@ -98,6 +97,13 @@ const setActiveNav = (id) => {
     box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
     transform: translateY(-2px);
   }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .nav-menu {
@@ -117,21 +123,26 @@ const setActiveNav = (id) => {
     color: #1a1a1a;
     transition: all 0.2s;
     border: 2px solid transparent;
-    
+
     svg {
       width: 20px;
       height: 20px;
     }
-    
+
     &:hover {
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       transform: translateY(-2px);
     }
-    
+
+    &:active {
+      color: #F97316;
+    }
+
     &.active {
       font-weight: 500;
       box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
       transform: translateY(-2px);
+      color: #F97316;
     }
   }
 }
@@ -163,22 +174,23 @@ const setActiveNav = (id) => {
     color: #1a1a1a;
     transition: all 0.2s;
     border: 2px solid transparent;
-    
+
     &:hover {
       padding-left: 24px;
+      color: #F97316;
     }
-    
+
     .tag-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
     }
-    
+
     .tag-name {
       flex: 1;
     }
-    
+
     .tag-count {
       font-size: 12px;
     }

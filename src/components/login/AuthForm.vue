@@ -360,6 +360,7 @@ const socialLogin = (provider) => {
   height: 18px;
   pointer-events: none;
   transition: all 0.2s;
+  z-index: 2;
 }
 
 .input-wrapper {
@@ -367,7 +368,8 @@ const socialLogin = (provider) => {
   display: flex;
   align-items: center;
 
-  &:hover .input-icon {
+  &:hover .input-icon,
+  &:focus-within .input-icon {
     stroke: #F97316;
   }
 }
@@ -383,14 +385,14 @@ const socialLogin = (provider) => {
 
   &:focus {
     outline: none;
-    background: #f5f7fa;
+    background: #fff9f5;
     box-shadow: inset 0 2px 6px rgba(249, 115, 22, 0.2);
     transform: scale(1.01);
     border-color: #F97316;
   }
 
   &:hover:not(:focus) {
-    background: #fafbfc;
+    background: #fff9f5;
     border-color: #F97316;
     box-shadow: inset 0 2px 6px rgba(249, 115, 22, 0.15);
   }
@@ -473,7 +475,7 @@ const socialLogin = (provider) => {
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-  border: none;
+  border: 1px solid #F97316;
   background: transparent;
 
   &:disabled {
@@ -482,8 +484,10 @@ const socialLogin = (provider) => {
   }
 
   &:hover:not(:disabled) {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
     transform: translateY(-2px);
+    background: #F97316;
+    color: white;
   }
 }
 
