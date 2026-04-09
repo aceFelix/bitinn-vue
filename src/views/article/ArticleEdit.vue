@@ -6,6 +6,7 @@ import 'vditor/dist/index.css'
 import defaultAvatar from '@/assets/user-avatar1.jpg'
 import { useTokenStore } from '@/stores/token'
 import { userInfoStore } from '@/stores/userInfo'
+import PublishDialog from '@/components/article/PublishDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -42,6 +43,9 @@ const vditorInstance = ref(null)
 const presetType = route.query.type || ''
 const presetTags = route.query.tags ? route.query.tags.split(',') : []
 
+// 发布弹窗
+const showPublishDialog = ref(false)
+
 // 返回上一页
 const goBack = () => {
   router.back()
@@ -60,20 +64,32 @@ const saveDraft = () => {
   alert('草稿已保存')
 }
 
-// 发布文章
+// 发布文章 - 打开发布弹窗
 const publishArticle = () => {
-  const content = vditorInstance.value?.getValue() || ''
   if (!articleTitle.value.trim()) {
     alert('请输入文章标题')
     return
   }
+  const content = vditorInstance.value?.getValue() || ''
   if (!content.trim()) {
     alert('请输入文章内容')
     return
   }
-  console.log('发布文章:', { title: articleTitle.value, content })
-  // TODO: 调用 API 发布文章
-  alert('文章发布成功')
+  showPublishDialog.value = true
+}
+
+// 确认发布
+const handlePublishConfirm = (publishData) => {
+  const content = vditorInstance.value?.getValue() || ''
+  console.log('发布文章:', {
+    title: articleTitle.value,
+    content,
+    type: publishData.type?.id,
+    tags: publishData.tags,
+    excerpt: publishData.excerpt,
+    coverUrl: publishData.coverUrl
+  })
+  alert('文章发布成功！')
   router.push('/')
 }
 
@@ -213,6 +229,15 @@ onUnmounted(() => {
         <div ref="vditor" class="vditor-container"></div>
       </div>
     </main>
+
+    <!-- 发布文章弹窗 -->
+    <PublishDialog
+      v-model:visible="showPublishDialog"
+      :preset-type="presetType"
+      :preset-tags="presetTags"
+      :title="articleTitle"
+      @confirm="handlePublishConfirm"
+    />
   </div>
 </template>
 

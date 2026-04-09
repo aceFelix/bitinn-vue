@@ -9,9 +9,13 @@ const articles = ref([
     excerpt: 'Composition API 是 Vue 3 中引入的一种新的组织组件逻辑的方式，它提供了更灵活的代码组织方式...',
     author: '张三',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
+    type: '技术文章',
+    typeColor: '#F97316',
     tags: ['Vue', 'JavaScript', '前端'],
     likes: 128,
     comments: 32,
+    favorites: 56,
+    shares: 18,
     readTime: '5 min',
     publishedAt: '2小时前',
     cover: null
@@ -22,22 +26,30 @@ const articles = ref([
     excerpt: 'Spring Boot 3.0 带来了许多令人兴奋的新特性，包括对 Jakarta EE 9 的支持、原生镜像支持等...',
     author: '李四',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
+    type: '技术文章',
+    typeColor: '#F97316',
     tags: ['Java', 'Spring Boot', '后端'],
     likes: 256,
     comments: 48,
+    favorites: 120,
+    shares: 45,
     readTime: '8 min',
     publishedAt: '5小时前',
     cover: 'https://picsum.photos/seed/spring/400/200'
   },
   {
     id: 3,
-    title: 'TypeScript 高级类型体操',
+    title: 'TypeScript 高级类型体操学习笔记',
     excerpt: 'TypeScript 的类型系统非常强大，本文将带你深入了解一些高级类型技巧...',
     author: '王五',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=3',
+    type: '学习笔记',
+    typeColor: '#10B981',
     tags: ['TypeScript', 'JavaScript'],
     likes: 89,
     comments: 15,
+    favorites: 42,
+    shares: 8,
     readTime: '12 min',
     publishedAt: '1天前',
     cover: null
@@ -48,9 +60,13 @@ const articles = ref([
     excerpt: '本文分享了在生产环境中使用 Docker 进行容器化部署的一些最佳实践...',
     author: '赵六',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=4',
+    type: '项目分享',
+    typeColor: '#8B5CF6',
     tags: ['Docker', 'DevOps', '运维'],
     likes: 167,
     comments: 23,
+    favorites: 78,
+    shares: 34,
     readTime: '6 min',
     publishedAt: '2天前',
     cover: 'https://picsum.photos/seed/docker/400/200'
@@ -61,9 +77,13 @@ const articles = ref([
     excerpt: 'React 18 引入了 Concurrent 模式，这是一个革命性的特性，它允许 React 同时准备多个版本的 UI...',
     author: '钱七',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=5',
+    type: '问题讨论',
+    typeColor: '#EF4444',
     tags: ['React', 'JavaScript', '前端'],
     likes: 312,
     comments: 67,
+    favorites: 156,
+    shares: 89,
     readTime: '10 min',
     publishedAt: '3天前',
     cover: null
@@ -123,6 +143,14 @@ const loadMore = () => {
             <div class="article-footer">
               <div class="article-tags">
                 <span 
+                  v-if="article.type"
+                  :key="article.type"
+                  class="type-badge"
+                  :style="{ color: article.typeColor, borderColor: article.typeColor }"
+                >
+                  {{ article.type }}
+                </span>
+                <span 
                   v-for="tag in article.tags" 
                   :key="tag"
                   class="tag-badge"
@@ -143,6 +171,20 @@ const loadMore = () => {
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                   </svg>
                   {{ article.comments }}
+                </span>
+                <span class="stat-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  {{ article.favorites }}
+                </span>
+                <span class="stat-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <polyline points="16 6 12 2 8 6"/>
+                    <line x1="12" y1="2" x2="12" y2="15"/>
+                  </svg>
+                  {{ article.shares }}
                 </span>
                 <span class="stat-item">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -342,6 +384,19 @@ const loadMore = () => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  
+  .type-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid;
+    transition: all 0.2s;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
   
   .tag-badge {
     padding: 4px 10px;

@@ -19,6 +19,7 @@ const activeNav = ref('home')
 const navItems = [
   { id: 'home', label: '首页', icon: 'home' },
   { id: 'reading', label: '阅读列表', icon: 'reading' },
+  { id: 'following', label: '关注', icon: 'following' },
   { id: 'favorites', label: '收藏', icon: 'favorites' },
   { id: 'settings', label: '设置', icon: 'settings' }
 ]
@@ -54,6 +55,13 @@ const setActiveNav = (id) => {
         <!-- 收藏图标 -->
         <svg v-else-if="item.icon === 'favorites'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <!-- 关注图标 -->
+        <svg v-else-if="item.icon === 'following'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="8.5" cy="7" r="4"/>
+          <line x1="20" y1="8" x2="20" y2="14"/>
+          <line x1="23" y1="11" x2="17" y2="11"/>
         </svg>
         <!-- 设置图标 -->
         <svg v-else-if="item.icon === 'settings'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
