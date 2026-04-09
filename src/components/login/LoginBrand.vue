@@ -18,7 +18,7 @@ const goHome = () => {
             <span class="dot yellow"></span>
             <span class="dot green"></span>
           </div>
-          <span class="file-name">BitLnn.java</span>
+          <span class="file-name">BitInn.java</span>
         </div>
         <div class="editor-body">
           <div class="line-numbers">
@@ -28,7 +28,7 @@ const goHome = () => {
             <div class="code-line">
               <span class="keyword">public</span>
               <span class="keyword">class</span>
-              <span class="class-name">BitLnn</span>
+              <span class="class-name">BitInn</span>
               <span class="bracket">{</span>
             </div>
             <div class="code-line indent-1">
@@ -81,7 +81,7 @@ const goHome = () => {
       <div class="brand-text">
         <h1 class="brand-title">
           <span class="bracket">&lt;</span>
-          <span class="brand-name">BitLnn</span>
+          <span class="brand-name">BitInn</span>
           <span class="bracket">/&gt;</span>
         </h1>
         <p class="brand-desc">开发者技术社区</p>

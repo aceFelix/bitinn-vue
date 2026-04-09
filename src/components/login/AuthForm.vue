@@ -1,8 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { userLoginService, userRegisterService } from '@/api/user'
+import { useTokenStore } from '@/stores/token'
+import { userInfoStore } from '@/stores/userInfo'
 
 const router = useRouter()
+const tokenStore = useTokenStore()
+const userStore = userInfoStore()
 
 const viewMode = defineModel({ default: 'login' })
 
@@ -16,8 +22,16 @@ const confirmPassword = ref('')
 const email = ref('')
 const verificationCode = ref('')
 
+// 密码显示/隐藏状态
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+const showNewPassword = ref(false)
+const showForgotNewPassword = ref(false)
+const showForgotConfirmPassword = ref(false)
+
 const countdown = ref(0)
 const isSendingCode = ref(false)
+const isSubmitting = ref(false)
 
 const toggleMode = () => {
   viewMode.value = viewMode.value === 'login' ? 'register' : 'login'
@@ -41,11 +55,16 @@ const resetForm = () => {
   email.value = ''
   verificationCode.value = ''
   countdown.value = 0
+  showPassword.value = false
+  showConfirmPassword.value = false
+  showNewPassword.value = false
+  showForgotNewPassword.value = false
+  showForgotConfirmPassword.value = false
 }
 
 const sendVerificationCode = async () => {
   if (!email.value) {
-    alert('请先输入邮箱地址')
+    ElMessage.warning('请先输入邮箱地址')
     return
   }
   if (countdown.value > 0) return
@@ -62,26 +81,60 @@ const sendVerificationCode = async () => {
         clearInterval(timer)
       }
     }, 1000)
-    alert('验证码已发送，请查收邮件')
+    ElMessage.success('验证码已发送，请查收邮件')
   }, 1000)
 }
 
-const handleSubmit = () => {
-  if (viewMode.value === 'login') {
-    console.log('登录:', username.value, password.value)
-    router.push('/')
-  } else if (viewMode.value === 'register') {
-    console.log('注册:', username.value, email.value, password.value)
-    router.push('/')
-  } else if (viewMode.value === 'forgot') {
-    console.log('重置密码:', email.value, verificationCode.value, password.value)
-    alert('密码重置成功！')
-    backToLogin()
+const handleSubmit = async () => {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+  
+  try {
+    if (viewMode.value === 'login') {
+      const res = await userLoginService({ username: username.value, password: password.value })
+      tokenStore.setToken(res.data)
+      const userInfoRes = await import('@/api/user').then(m => m.getUserInfoService())
+      userStore.setUserInfo(userInfoRes.data)
+      ElMessage.success('登录成功！')
+      router.push('/')
+    } else if (viewMode.value === 'register') {
+      if (password.value !== confirmPassword.value) {
+        ElMessage.warning('两次输入的密码不一致')
+        return
+      }
+      if (password.value.length < 6 || password.value.length > 20) {
+        ElMessage.warning('密码长度必须在6-20位之间')
+        return
+      }
+      if (username.value.length < 3 || username.value.length > 16) {
+        ElMessage.warning('用户名长度必须在3-16位之间')
+        return
+      }
+      await userRegisterService({
+        username: username.value,
+        password: password.value,
+        email: email.value
+      })
+      ElMessage.success('注册成功！请登录')
+      backToLogin()
+    } else if (viewMode.value === 'forgot') {
+      if (password.value !== confirmPassword.value) {
+        ElMessage.warning('两次输入的密码不一致')
+        return
+      }
+      console.log('重置密码:', email.value, verificationCode.value, password.value)
+      ElMessage.success('密码重置成功！')
+      backToLogin()
+    }
+  } catch (error) {
+    console.error('操作失败:', error)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
 const socialLogin = (provider) => {
-  console.log(`使用 ${provider} 登录`)
+  window.location.href = `/api/oauth2/authorization/${provider}`
 }
 </script>
 
@@ -117,7 +170,17 @@ const socialLogin = (provider) => {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <input v-model="password" type="password" class="form-input" placeholder="请输入密码" required />
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" class="form-input has-toggle" placeholder="请输入密码" required />
+            <button type="button" class="toggle-password" @click="showPassword = !showPassword" tabindex="-1">
+              <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -164,7 +227,17 @@ const socialLogin = (provider) => {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <input v-model="password" type="password" class="form-input" placeholder="请输入新密码" required />
+            <input v-model="password" :type="showForgotNewPassword ? 'text' : 'password'" class="form-input has-toggle" placeholder="请输入新密码" required />
+            <button type="button" class="toggle-password" @click="showForgotNewPassword = !showForgotNewPassword" tabindex="-1">
+              <svg v-if="showForgotNewPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -175,7 +248,17 @@ const socialLogin = (provider) => {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <input v-model="confirmPassword" type="password" class="form-input" placeholder="请再次输入新密码" required />
+            <input v-model="confirmPassword" :type="showForgotConfirmPassword ? 'text' : 'password'" class="form-input has-toggle" placeholder="请再次输入新密码" required />
+            <button type="button" class="toggle-password" @click="showForgotConfirmPassword = !showForgotConfirmPassword" tabindex="-1">
+              <svg v-if="showForgotConfirmPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
           </div>
         </div>
       </template>
@@ -211,7 +294,17 @@ const socialLogin = (provider) => {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <input v-model="password" type="password" class="form-input" placeholder="请输入密码" required />
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" class="form-input has-toggle" placeholder="请输入密码" required />
+            <button type="button" class="toggle-password" @click="showPassword = !showPassword" tabindex="-1">
+              <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -222,13 +315,24 @@ const socialLogin = (provider) => {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <input v-model="confirmPassword" type="password" class="form-input" placeholder="请再次输入密码" required />
+            <input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" class="form-input has-toggle" placeholder="请再次输入密码" required />
+            <button type="button" class="toggle-password" @click="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+              <svg v-if="showConfirmPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
           </div>
         </div>
       </template>
 
-      <button type="submit" class="btn-submit">
-        {{ isForgot ? '重置密码' : (isLogin ? '登录' : '注册') }}
+      <button type="submit" class="btn-submit" :disabled="isSubmitting">
+        <span v-if="isSubmitting" class="loading-spinner"></span>
+        {{ isSubmitting ? '处理中...' : (isForgot ? '重置密码' : (isLogin ? '登录' : '注册')) }}
       </button>
     </form>
 
@@ -383,6 +487,10 @@ const socialLogin = (provider) => {
   border: 1px solid transparent;
   transition: all 0.2s;
 
+  &.has-toggle {
+    padding-right: 42px;
+  }
+
   &:focus {
     outline: none;
     background: #fff9f5;
@@ -395,6 +503,33 @@ const socialLogin = (provider) => {
     background: #fff9f5;
     border-color: #F97316;
     box-shadow: inset 0 2px 6px rgba(249, 115, 22, 0.15);
+  }
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 2;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke: #999;
+    transition: stroke 0.2s;
+  }
+
+  &:hover svg {
+    stroke: #F97316;
   }
 }
 
@@ -446,14 +581,38 @@ const socialLogin = (provider) => {
   margin-top: 4px;
   border: none;
   background: #F97316;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 
-  &:hover {
+  &:hover:not(:disabled) {
     box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
     transform: translateY(-2px);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

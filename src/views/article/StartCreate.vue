@@ -1,11 +1,37 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ArticleTypeSelector from '@/components/create/ArticleTypeSelector.vue'
 import TagSelector from '@/components/create/TagSelector.vue'
 import DraftBox from '@/components/create/DraftBox.vue'
+import defaultAvatar from '@/assets/user-avatar1.jpg'
+import { useTokenStore } from '@/stores/token'
+import { userInfoStore } from '@/stores/userInfo'
 
 const router = useRouter()
+const tokenStore = useTokenStore()
+const userStore = userInfoStore()
+
+const isLoggedIn = computed(() => !!tokenStore.token)
+
+const userAvatar = computed(() => {
+  if (!isLoggedIn.value) return ''
+  const avatar = userStore.userInfo?.userPic || ''
+  return avatar || defaultAvatar
+})
+
+const userName = computed(() => {
+  if (!isLoggedIn.value) return ''
+  return userStore.userInfo?.nickname || userStore.userInfo?.username || '用户'
+})
+
+const goToLogin = () => {
+  router.push('/login')
+}
+
+const goToAdmin = () => {
+  router.push('/admin/article/manage')
+}
 
 // 文章类型选择器引用
 const typeSelectorRef = ref(null)
@@ -41,16 +67,22 @@ const goHome = () => {
     <header class="create-header">
       <div class="header-brand" @click="goHome">
         <span class="bracket">&lt;</span>
-        <span class="brand-name">BitLnn</span>
+        <span class="brand-name">BitInn</span>
         <span class="bracket">/&gt;</span>
       </div>
       <h1 class="header-title">开始创作</h1>
-      <button class="btn-back" @click="goHome">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        <span>返回</span>
-      </button>
+      <div class="header-right">
+        <button class="btn-back" @click="goHome">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          <span>返回</span>
+        </button>
+        <button v-if="!isLoggedIn" class="btn-login" @click="goToLogin">登录 / 注册</button>
+        <div v-else class="user-avatar-wrapper" :title="userName" @click="goToAdmin">
+          <img :src="userAvatar" :alt="userName" class="user-avatar" />
+        </div>
+      </div>
     </header>
 
     <!-- 主内容区 -->
@@ -59,7 +91,7 @@ const goHome = () => {
       <ArticleTypeSelector ref="typeSelectorRef" />
 
       <!-- 中间：推荐标签 -->
-      <TagSelector ref="tagSelectorRef" />
+      <TagSelector ref="tagSelectorRef" :has-selected-type="!!typeSelectorRef?.selectedType" @start-edit="startWriting" />
 
       <!-- 右侧：草稿箱 -->
       <DraftBox ref="draftBoxRef">
@@ -161,6 +193,56 @@ const goHome = () => {
     svg {
       stroke: white;
     }
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-login {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #F97316;
+  background: transparent;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+    transform: translateY(-2px);
+    background: #F97316;
+    color: white;
+  }
+}
+
+.user-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+    transform: translateY(-2px);
+    border-color: #F97316;
+  }
+
+  .user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
   }
 }
 

@@ -1,14 +1,35 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import LeftSidebar from '@/components/home/LeftSidebar.vue'
 import ArticleFeed from '@/components/home/ArticleFeed.vue'
 import RightSidebar from '@/components/home/RightSidebar.vue'
+import defaultAvatar from '@/assets/user-avatar1.jpg'
+import { useTokenStore } from '@/stores/token'
+import { userInfoStore } from '@/stores/userInfo'
 
 const router = useRouter()
+const tokenStore = useTokenStore()
+const userStore = userInfoStore()
 
 // 搜索关键词
 const searchQuery = ref('')
+
+// 是否已登录
+const isLoggedIn = computed(() => !!tokenStore.token)
+
+// 用户头像
+const userAvatar = computed(() => {
+  if (!isLoggedIn.value) return ''
+  const avatar = userStore.userInfo?.userPic || ''
+  return avatar || defaultAvatar
+})
+
+// 用户名
+const userName = computed(() => {
+  if (!isLoggedIn.value) return ''
+  return userStore.userInfo?.nickname || userStore.userInfo?.username || '用户'
+})
 
 // 导航到登录页
 const goToLogin = () => {
@@ -39,7 +60,7 @@ const openMessages = () => {
       <div class="nav-brand">
         <div class="logo">
           <span class="logo-bracket">&lt;</span>
-          <span class="logo-text">BitLnn</span>
+          <span class="logo-text">BitInn</span>
           <span class="logo-bracket">/&gt;</span>
         </div>
       </div>
@@ -74,7 +95,10 @@ const openMessages = () => {
           </svg>
           <span class="message-badge">3</span>
         </button>
-        <button class="btn-login" @click="goToLogin">登录 / 注册</button>
+        <button v-if="!isLoggedIn" class="btn-login" @click="goToLogin">登录 / 注册</button>
+        <div v-else class="user-avatar-wrapper" :title="userName">
+          <img :src="userAvatar" :alt="userName" class="user-avatar" />
+        </div>
       </div>
     </header>
 
@@ -306,6 +330,32 @@ const openMessages = () => {
       transform: translateY(-2px);
       background: #F97316;
       color: white;
+    }
+  }
+
+  .user-avatar-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+      transform: translateY(-2px);
+      border-color: #F97316;
+    }
+
+    .user-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
     }
   }
 }

@@ -1,11 +1,37 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Vditor from 'vditor'
 import 'vditor/dist/index.css'
+import defaultAvatar from '@/assets/user-avatar1.jpg'
+import { useTokenStore } from '@/stores/token'
+import { userInfoStore } from '@/stores/userInfo'
 
 const router = useRouter()
 const route = useRoute()
+const tokenStore = useTokenStore()
+const userStore = userInfoStore()
+
+const isLoggedIn = computed(() => !!tokenStore.token)
+
+const userAvatar = computed(() => {
+  if (!isLoggedIn.value) return ''
+  const avatar = userStore.userInfo?.userPic || ''
+  return avatar || defaultAvatar
+})
+
+const userName = computed(() => {
+  if (!isLoggedIn.value) return ''
+  return userStore.userInfo?.nickname || userStore.userInfo?.username || '用户'
+})
+
+const goToLogin = () => {
+  router.push('/login')
+}
+
+const goToAdmin = () => {
+  router.push('/admin/article/manage')
+}
 
 // 文章数据
 const articleTitle = ref('')
@@ -100,7 +126,7 @@ onMounted(() => {
     },
     cache: {
       enable: true,
-      id: 'bitlnn-article-draft'
+      id: 'bitinn-article-draft'
     },
     upload: {
       url: '/api/upload', // TODO: 配置上传接口
@@ -132,7 +158,7 @@ onUnmounted(() => {
       <div class="header-left">
         <div class="header-brand" @click="goHome">
           <span class="bracket">&lt;</span>
-          <span class="brand-name">BitLnn</span>
+          <span class="brand-name">BitInn</span>
           <span class="bracket">/&gt;</span>
         </div>
         <button class="btn-back" @click="goBack">
@@ -161,6 +187,10 @@ onUnmounted(() => {
           </svg>
           <span>发布文章</span>
         </button>
+        <button v-if="!isLoggedIn" class="btn-login" @click="goToLogin">登录 / 注册</button>
+        <div v-else class="user-avatar-wrapper" :title="userName" @click="goToAdmin">
+          <img :src="userAvatar" :alt="userName" class="user-avatar" />
+        </div>
       </div>
     </header>
 
@@ -278,6 +308,50 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.btn-login {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #F97316;
+  background: transparent;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+    transform: translateY(-2px);
+    background: #F97316;
+    color: white;
+  }
+}
+
+.user-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+    transform: translateY(-2px);
+    border-color: #F97316;
+  }
+
+  .user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
 }
 
 .btn-secondary {

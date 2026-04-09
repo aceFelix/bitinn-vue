@@ -21,7 +21,7 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => {
     const result = response.data
-    if (result.code === 0) {
+    if (result.code === 200) {
       return result
     }
     ElMessage.error(result.message || '服务异常')

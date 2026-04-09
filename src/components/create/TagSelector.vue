@@ -1,23 +1,77 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick, defineProps } from 'vue'
 
-// 推荐标签
-const recommendedTags = ref([
-  'Java', 'Spring Boot', 'Vue', 'React', 'Python', 
-  'Docker', 'MySQL', 'Redis', '微服务', '算法'
-])
+// 接收父组件传递的选中状态
+const props = defineProps({
+  hasSelectedType: {
+    type: Boolean,
+    default: false
+  }
+})
+
+// 原始推荐标签（固定不变）
+const originalTags = ['Java', 'Spring Boot', 'Vue', 'React', 'Python', 'Docker', 'MySQL', 'Redis', '微服务', '算法']
+
+// 推荐标签（包含自定义的）
+const recommendedTags = ref([...originalTags])
 
 // 选中的标签
 const selectedTags = ref([])
+
+// 自定义标签输入
+const showCustomInput = ref(false)
+const customTagInput = ref(null)
+const customTagText = ref('')
 
 // 切换标签选择
 const toggleTag = (tag) => {
   const index = selectedTags.value.indexOf(tag)
   if (index > -1) {
+    // 从选中列表移除
     selectedTags.value.splice(index, 1)
+    // 如果是自定义标签（不在原始标签中），也从推荐列表移除
+    if (!originalTags.includes(tag)) {
+      const recIndex = recommendedTags.value.indexOf(tag)
+      if (recIndex > -1) {
+        recommendedTags.value.splice(recIndex, 1)
+      }
+    }
   } else {
     selectedTags.value.push(tag)
   }
+}
+
+// 显示自定义输入框
+const showCustomTagInput = () => {
+  showCustomInput.value = true
+  nextTick(() => {
+    customTagInput.value?.focus()
+  })
+}
+
+// 添加自定义标签
+const addCustomTag = () => {
+  const tag = customTagText.value.trim()
+  if (!tag) {
+    showCustomInput.value = false
+    return
+  }
+  // 添加到推荐列表（如果不存在）
+  if (!recommendedTags.value.includes(tag)) {
+    recommendedTags.value.push(tag)
+  }
+  // 添加到选中列表（如果不存在）
+  if (!selectedTags.value.includes(tag)) {
+    selectedTags.value.push(tag)
+  }
+  customTagText.value = ''
+  showCustomInput.value = false
+}
+
+// 取消自定义输入
+const cancelCustomTag = () => {
+  customTagText.value = ''
+  showCustomInput.value = false
 }
 
 // 暴露选中标签给父组件
@@ -27,34 +81,77 @@ defineExpose({
   getSelectedTags,
   selectedTags
 })
+
+// 定义事件
+const emit = defineEmits(['start-edit'])
+
+// 开始编辑
+const startEdit = () => {
+  emit('start-edit')
+}
 </script>
 
 <template>
   <section class="tags-section">
-    <h2 class="section-title">添加标签</h2>
-    <p class="section-desc">选择合适的标签，让更多人发现你的文章</p>
-    <div class="tags-cloud">
-      <button
-        v-for="tag in recommendedTags"
-        :key="tag"
-        class="tag-btn"
-        :class="{ active: selectedTags.includes(tag) }"
-        @click="toggleTag(tag)"
-      >
-        {{ tag }}
-      </button>
+    <div class="tags-content">
+      <h2 class="section-title">添加标签</h2>
+      <p class="section-desc">选择合适的标签，让更多人发现你的文章</p>
+      <div class="tags-cloud">
+        <button
+          v-for="tag in recommendedTags"
+          :key="tag"
+          class="tag-btn"
+          :class="{ active: selectedTags.includes(tag) }"
+          @click="toggleTag(tag)"
+        >
+          {{ tag }}
+        </button>
+        <button
+          v-if="!showCustomInput"
+          class="tag-btn tag-btn-custom"
+          @click="showCustomTagInput"
+        >
+          + 自定义
+        </button>
+        <input
+          v-else
+          ref="customTagInput"
+          v-model="customTagText"
+          class="custom-tag-input"
+          placeholder="输入标签后按回车"
+          @keyup.enter="addCustomTag"
+          @keyup.escape="cancelCustomTag"
+          @blur="cancelCustomTag"
+        />
+      </div>
+      <div class="selected-tags" v-if="selectedTags.length > 0">
+        <span class="selected-label">已选择：</span>
+        <span
+          v-for="tag in selectedTags"
+          :key="tag"
+          class="selected-tag"
+          @click="toggleTag(tag)"
+        >
+          {{ tag }}
+          <span class="remove">×</span>
+        </span>
+      </div>
     </div>
-    <div class="selected-tags" v-if="selectedTags.length > 0">
-      <span class="selected-label">已选择：</span>
-      <span
-        v-for="tag in selectedTags"
-        :key="tag"
-        class="selected-tag"
-        @click="toggleTag(tag)"
+
+    <!-- 开始编辑按钮 -->
+    <div class="edit-action">
+      <button 
+        class="btn-start-edit" 
+        :class="{ active: hasSelectedType }"
+        @click="startEdit"
+        :disabled="!hasSelectedType"
       >
-        {{ tag }}
-        <span class="remove">×</span>
-      </span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        开始编辑
+      </button>
     </div>
   </section>
 </template>
@@ -62,16 +159,23 @@ defineExpose({
 <style scoped lang="scss">
 .tags-section {
   height: 100%;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  padding: 24px;
   transition: all 0.2s;
 
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(249, 115, 22, 0.25);
   }
+}
+
+.tags-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  padding-bottom: 16px;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -127,6 +231,36 @@ defineExpose({
     background: #F97316;
     box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
   }
+
+  &.tag-btn-custom {
+    border-style: dashed;
+    color: #F97316;
+
+    &:hover {
+      background: rgba(249, 115, 22, 0.08);
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+    }
+  }
+}
+
+.custom-tag-input {
+  padding: 8px 14px;
+  border: 1px dashed #F97316;
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+  min-width: 140px;
+  transition: all 0.2s;
+
+  &:focus {
+    border-style: solid;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+
+    &::placeholder {
+      color: #999;
+    }
+  }
 }
 
 .selected-tags {
@@ -156,6 +290,45 @@ defineExpose({
   .remove {
     font-size: 14px;
     opacity: 0.8;
+  }
+}
+
+.edit-action {
+  padding: 16px 24px 24px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-start-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  color: #999;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: not-allowed;
+  transition: all 0.2s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &.active {
+    background: #F97316;
+    color: white;
+    border-color: #F97316;
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+      transform: translateY(-2px);
+    }
   }
 }
 </style>

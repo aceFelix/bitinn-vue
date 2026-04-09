@@ -30,7 +30,7 @@ const followUser = (user) => {
       <h3 class="card-title">
         <span class="title-icon">👋</span>
         <span class="logo-bracket">&lt;</span>
-        <span class="logo-text">欢迎来到BitLnn</span>
+        <span class="logo-text">欢迎来到BitInn</span>
         <span class="logo-bracket">/&gt;</span>
       </h3>
       <p class="card-desc">
@@ -75,7 +75,7 @@ const followUser = (user) => {
       <a href="#">使用条款</a>
       <a href="#">隐私政策</a>
       <a href="#">联系我们</a>
-      <p class="copyright">© 2026 BitLnn</p>
+      <p class="copyright">© 2026 BitInn</p>
     </footer>
   </aside>
 </template>
