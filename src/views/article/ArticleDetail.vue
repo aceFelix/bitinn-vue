@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ArticleDetailSidebar from '@/components/article/ArticleDetailSidebar.vue'
 import ArticleDetailContent from '@/components/article/ArticleDetailContent.vue'
 import ArticleDetailRight from '@/components/article/ArticleDetailRight.vue'
+import UserCard from '@/components/common/UserCard.vue'
 import defaultAvatar from '@/assets/user-avatar1.jpg'
 import { useTokenStore } from '@/stores/token'
 import { userInfoStore } from '@/stores/userInfo'
@@ -12,6 +13,8 @@ const route = useRoute()
 const router = useRouter()
 const tokenStore = useTokenStore()
 const userStore = userInfoStore()
+
+const showUserCard = ref(false)
 
 const articleId = computed(() => route.params.id)
 
@@ -207,6 +210,10 @@ const goHome = () => {
   router.push('/')
 }
 
+const toggleUserCard = () => {
+  showUserCard.value = !showUserCard.value
+}
+
 const handleTocClick = (item) => {
   const el = document.getElementById(item.id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -238,11 +245,13 @@ const handleTocClick = (item) => {
           <span>写文章</span>
         </button>
         <button v-if="!isLoggedIn" class="btn-login" @click="router.push('/login')">登录 / 注册</button>
-        <div v-else class="user-avatar-wrapper" :title="userName">
+        <div v-else class="user-avatar-wrapper" :title="userName" @click="toggleUserCard">
           <img :src="userAvatar" :alt="userName" class="user-avatar" />
         </div>
       </div>
     </header>
+
+    <UserCard :visible="showUserCard" @close="showUserCard = false" />
 
     <main class="main-content">
       <ArticleDetailSidebar

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import ArticleTypeSelector from '@/components/create/ArticleTypeSelector.vue'
 import TagSelector from '@/components/create/TagSelector.vue'
 import DraftBox from '@/components/create/DraftBox.vue'
+import UserCard from '@/components/common/UserCard.vue'
 import defaultAvatar from '@/assets/user-avatar1.jpg'
 import { useTokenStore } from '@/stores/token'
 import { userInfoStore } from '@/stores/userInfo'
@@ -13,6 +14,7 @@ const tokenStore = useTokenStore()
 const userStore = userInfoStore()
 
 const isLoggedIn = computed(() => !!tokenStore.token)
+const showUserCard = ref(false)
 
 const userAvatar = computed(() => {
   if (!isLoggedIn.value) return ''
@@ -29,8 +31,12 @@ const goToLogin = () => {
   router.push('/login')
 }
 
-const goToAdmin = () => {
-  router.push('/admin/article/manage')
+const toggleUserCard = () => {
+  showUserCard.value = !showUserCard.value
+}
+
+const closeUserCard = () => {
+  showUserCard.value = false
 }
 
 // 文章类型选择器引用
@@ -79,11 +85,13 @@ const goHome = () => {
           <span>返回</span>
         </button>
         <button v-if="!isLoggedIn" class="btn-login" @click="goToLogin">登录 / 注册</button>
-        <div v-else class="user-avatar-wrapper" :title="userName" @click="goToAdmin">
+        <div v-else class="user-avatar-wrapper" :title="userName" @click="toggleUserCard">
           <img :src="userAvatar" :alt="userName" class="user-avatar" />
         </div>
       </div>
     </header>
+
+    <UserCard :visible="showUserCard" @close="closeUserCard" />
 
     <!-- 主内容区 -->
     <main class="create-content">

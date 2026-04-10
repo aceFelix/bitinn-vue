@@ -7,6 +7,7 @@ import defaultAvatar from '@/assets/user-avatar1.jpg'
 import { useTokenStore } from '@/stores/token'
 import { userInfoStore } from '@/stores/userInfo'
 import PublishDialog from '@/components/article/PublishDialog.vue'
+import UserCard from '@/components/common/UserCard.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -14,6 +15,14 @@ const tokenStore = useTokenStore()
 const userStore = userInfoStore()
 
 const isLoggedIn = computed(() => !!tokenStore.token)
+
+// 用户卡片显示状态
+const showUserCard = ref(false)
+
+// 切换用户卡片
+const toggleUserCard = () => {
+  showUserCard.value = !showUserCard.value
+}
 
 const userAvatar = computed(() => {
   if (!isLoggedIn.value) return ''
@@ -204,11 +213,13 @@ onUnmounted(() => {
           <span>发布文章</span>
         </button>
         <button v-if="!isLoggedIn" class="btn-login" @click="goToLogin">登录 / 注册</button>
-        <div v-else class="user-avatar-wrapper" :title="userName" @click="goToAdmin">
+        <div v-else class="user-avatar-wrapper" :title="userName" @click="toggleUserCard">
           <img :src="userAvatar" :alt="userName" class="user-avatar" />
         </div>
       </div>
     </header>
+
+    <UserCard :visible="showUserCard" @close="showUserCard = false" />
 
     <!-- 编辑区域 -->
     <main class="edit-main">

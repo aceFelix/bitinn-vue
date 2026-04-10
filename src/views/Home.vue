@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import LeftSidebar from '@/components/home/LeftSidebar.vue'
 import ArticleFeed from '@/components/home/ArticleFeed.vue'
 import RightSidebar from '@/components/home/RightSidebar.vue'
+import UserCard from '@/components/common/UserCard.vue'
 import defaultAvatar from '@/assets/user-avatar1.jpg'
 import { useTokenStore } from '@/stores/token'
 import { userInfoStore } from '@/stores/userInfo'
@@ -17,6 +18,14 @@ const searchQuery = ref('')
 
 // 是否已登录
 const isLoggedIn = computed(() => !!tokenStore.token)
+
+// 用户卡片显示状态
+const showUserCard = ref(false)
+
+// 切换用户卡片
+const toggleUserCard = () => {
+  showUserCard.value = !showUserCard.value
+}
 
 // 用户头像
 const userAvatar = computed(() => {
@@ -96,11 +105,13 @@ const openMessages = () => {
           <span class="message-badge">3</span>
         </button>
         <button v-if="!isLoggedIn" class="btn-login" @click="goToLogin">登录 / 注册</button>
-        <div v-else class="user-avatar-wrapper" :title="userName">
+        <div v-else class="user-avatar-wrapper" :title="userName" @click="toggleUserCard">
           <img :src="userAvatar" :alt="userName" class="user-avatar" />
         </div>
       </div>
     </header>
+
+    <UserCard :visible="showUserCard" @close="showUserCard = false" />
 
     <!-- 主内容区 -->
     <main class="main-content">
