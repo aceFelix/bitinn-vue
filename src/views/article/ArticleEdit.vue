@@ -177,15 +177,15 @@ onUnmounted(() => {
           <span class="brand-name">BitInn</span>
           <span class="bracket">/&gt;</span>
         </div>
+      </div>
+
+      <div class="header-actions">
         <button class="btn-back" @click="goBack">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
           <span>返回</span>
         </button>
-      </div>
-      
-      <div class="header-actions">
         <button class="btn-secondary" @click="saveDraft">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>

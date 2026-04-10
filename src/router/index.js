@@ -8,6 +8,7 @@ import ArticleCategoryVue from '@/views/article/ArticleCategory.vue'
 import ArticleManageVue from '@/views/article/ArticleManage.vue'
 import StartCreateVue from '@/views/article/StartCreate.vue'
 import ArticleEditVue from '@/views/article/ArticleEdit.vue'
+import ArticleDetailVue from '@/views/article/ArticleDetail.vue'
 import UserAvatarVue from '@/views/user/UserAvatar.vue'
 import UserInfoVue from '@/views/user/UserInfo.vue'
 import UserResetPasswordVue from '@/views/user/UserResetPassword.vue'
@@ -17,6 +18,7 @@ const routes = [
   { path: '/', component: HomeVue },
   { path: '/create', component: StartCreateVue },
   { path: '/article/edit', component: ArticleEditVue },
+  { path: '/article/:id', component: ArticleDetailVue },
   {
     path: '/admin',
     component: LayoutVue,

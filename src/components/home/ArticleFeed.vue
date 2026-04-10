@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // 模拟文章数据
 const articles = ref([
@@ -99,8 +102,11 @@ const sortOptions = [
 ]
 
 const loadMore = () => {
-  // TODO: 实现加载更多逻辑
   console.log('加载更多文章')
+}
+
+const goToDetail = (id) => {
+  router.push(`/article/${id}`)
 }
 </script>
 
@@ -126,6 +132,7 @@ const loadMore = () => {
         v-for="article in articles" 
         :key="article.id"
         class="article-card"
+        @click="goToDetail(article.id)"
       >
         <div class="article-header">
           <img :src="article.avatar" :alt="article.author" class="author-avatar">
