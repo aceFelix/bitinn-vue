@@ -39,14 +39,17 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (import.meta.env.DEV) {
-    return true
-  }
-
   const tokenStore = useTokenStore()
 
   if (to.path === '/login') {
     return tokenStore.token ? '/' : true
+  }
+
+  const publicPages = ['/', '/create']
+  const isPublicPage = publicPages.includes(to.path) || to.path.startsWith('/article/')
+  
+  if (isPublicPage) {
+    return true
   }
 
   return tokenStore.token ? true : '/login'
