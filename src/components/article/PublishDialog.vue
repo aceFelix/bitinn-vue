@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import request from '@/utils/request'
 
 const props = defineProps({
   visible: {
@@ -22,59 +23,114 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'confirm', 'cancel'])
 
-const articleTypes = [
-  {
-    id: 'tech',
-    name: '技术文章',
-    icon: '💻',
-    color: '#F97316'
-  },
-  {
-    id: 'note',
-    name: '学习笔记',
-    icon: '📝',
-    color: '#10B981'
-  },
-  {
-    id: 'discussion',
-    name: '问题讨论',
-    icon: '💬',
-    color: '#EF4444'
-  },
-  {
-    id: 'project',
-    name: '项目分享',
-    icon: '🚀',
-    color: '#8B5CF6'
-  }
+const localTypes = [
+  { id: 1, name: '技术文章', alias: 'tech', icon: '💻', color: '#F97316' },
+  { id: 2, name: '学习笔记', alias: 'note', icon: '📝', color: '#10B981' },
+  { id: 3, name: '问题讨论', alias: 'discussion', icon: '💬', color: '#EF4444' },
+  { id: 4, name: '项目分享', alias: 'project', icon: '🚀', color: '#8B5CF6' }
 ]
 
-const allTags = ['Java', 'Spring Boot', 'Vue', 'React', 'Python', 'Docker', 'MySQL', 'Redis', '微服务', '算法', 'TypeScript', 'Go']
+const localTags = [
+  { id: 1, name: 'Java', color: '#F97316' },
+  { id: 2, name: 'Spring Boot', color: '#6DB33F' },
+  { id: 3, name: 'Vue', color: '#42B883' },
+  { id: 4, name: 'React', color: '#61DAFB' },
+  { id: 5, name: 'Python', color: '#3776AB' },
+  { id: 6, name: 'Docker', color: '#2496ED' },
+  { id: 7, name: 'MySQL', color: '#4479A1' },
+  { id: 8, name: 'Redis', color: '#DC382D' },
+  { id: 9, name: '微服务', color: '#9B59B6' },
+  { id: 10, name: '算法', color: '#E74C3C' },
+  { id: 11, name: 'TypeScript', color: '#3178C6' },
+  { id: 12, name: 'Go', color: '#00ADD8' }
+]
+
+const articleTypes = ref([...localTypes])
+const allTags = ref([...localTags])
+
+const fetchCategories = async () => {
+  try {
+    const result = await request.get('/category')
+    if (result.code === 200 && result.data && result.data.length > 0) {
+      const typeIconMap = {
+        '技术文章': '💻',
+        '学习笔记': '📝',
+        '问题讨论': '💬',
+        '项目分享': '🚀',
+        '经验分享': '💡',
+        '教程指南': '📖'
+      }
+      const typeColorMap = {
+        '技术文章': '#F97316',
+        '学习笔记': '#10B981',
+        '问题讨论': '#EF4444',
+        '项目分享': '#8B5CF6',
+        '经验分享': '#3B82F6',
+        '教程指南': '#EC4899'
+      }
+      articleTypes.value = result.data.map(c => ({
+        id: c.id,
+        name: c.categoryName,
+        alias: c.categoryAlias,
+        icon: typeIconMap[c.categoryName] || '📄',
+        color: typeColorMap[c.categoryName] || '#F97316'
+      }))
+    }
+  } catch (error) {
+    console.error('获取分类失败，使用本地数据:', error)
+  }
+}
+
+const fetchTags = async () => {
+  try {
+    const result = await request.get('/tag')
+    if (result.code === 200 && result.data && result.data.length > 0) {
+      allTags.value = result.data.map(t => ({
+        id: t.id,
+        name: t.tagName,
+        color: t.tagColor || '#409EFF'
+      }))
+    }
+  } catch (error) {
+    console.error('获取标签失败，使用本地数据:', error)
+  }
+}
+
+watch(() => props.visible, async (val) => {
+  if (val) {
+    await fetchCategories()
+    await fetchTags()
+    initFromPreset()
+  }
+})
 
 const selectedType = ref(null)
 const selectedTags = ref([])
 const excerpt = ref('')
 const coverUrl = ref('')
 const coverFile = ref(null)
+const uploadingCover = ref(false)
 
 const initFromPreset = () => {
   if (props.presetType) {
-    const found = articleTypes.find(t => t.id === props.presetType)
+    const found = articleTypes.value.find(t => String(t.id) === props.presetType || t.alias === props.presetType)
     if (found) selectedType.value = found
   }
   if (props.presetTags && props.presetTags.length > 0) {
-    selectedTags.value = [...props.presetTags]
+    selectedTags.value = props.presetTags.map(pt => {
+      if (typeof pt === 'object') return pt
+      const found = allTags.value.find(t => t.name === pt || String(t.id) === pt)
+      return found || pt
+    })
   }
 }
-
-initFromPreset()
 
 const selectType = (type) => {
   selectedType.value = type
 }
 
 const toggleTag = (tag) => {
-  const idx = selectedTags.value.indexOf(tag)
+  const idx = selectedTags.value.findIndex(t => (typeof t === 'object' ? t.id : t) === (typeof tag === 'object' ? tag.id : tag))
   if (idx > -1) {
     selectedTags.value.splice(idx, 1)
   } else {
@@ -82,14 +138,37 @@ const toggleTag = (tag) => {
   }
 }
 
-const handleCoverUpload = (e) => {
+const isTagSelected = (tag) => {
+  const tagId = typeof tag === 'object' ? tag.id : tag
+  return selectedTags.value.some(t => (typeof t === 'object' ? t.id : t) === tagId)
+}
+
+const handleCoverUpload = async (e) => {
   const file = e.target.files[0]
   if (!file) return
   if (!file.type.startsWith('image/')) return
+
   coverFile.value = file
+  uploadingCover.value = true
+
   const reader = new FileReader()
-  reader.onload = (ev) => {
+  reader.onload = async (ev) => {
     coverUrl.value = ev.target.result
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const result = await request.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      if (result.code === 200 && result.data) {
+        coverUrl.value = result.data
+      }
+    } catch (error) {
+      console.error('封面上传失败:', error)
+    } finally {
+      uploadingCover.value = false
+    }
   }
   reader.readAsDataURL(file)
 }
@@ -102,7 +181,7 @@ const removeCover = () => {
 const excerptCount = computed(() => excerpt.value.length)
 
 const canPublish = computed(() => {
-  return props.title.trim() && selectedType.value && excerpt.value.trim().length >= 20
+  return props.title.trim() && selectedType.value && excerpt.value.trim().length >= 10
 })
 
 const handleConfirm = () => {
@@ -111,9 +190,13 @@ const handleConfirm = () => {
     type: selectedType.value,
     tags: [...selectedTags.value],
     excerpt: excerpt.value.trim(),
-    coverUrl: coverUrl.value,
-    coverFile: coverFile.value
+    coverUrl: coverUrl.value
   })
+  selectedType.value = null
+  selectedTags.value = []
+  excerpt.value = ''
+  coverUrl.value = ''
+  coverFile.value = null
   handleClose()
 }
 
@@ -163,12 +246,12 @@ const handleClose = () => {
               <div class="tag-cloud">
                 <button
                   v-for="tag in allTags"
-                  :key="tag"
+                  :key="tag.id || tag"
                   class="tag-chip"
-                  :class="{ active: selectedTags.includes(tag) }"
+                  :class="{ active: isTagSelected(tag) }"
                   @click="toggleTag(tag)"
                 >
-                  {{ tag }}
+                  {{ tag.name || tag }}
                 </button>
               </div>
               <p v-if="selectedTags.length === 0" class="hint-text">请至少选择一个标签</p>
@@ -177,8 +260,12 @@ const handleClose = () => {
             <!-- 文章封面 -->
             <div class="form-section">
               <label class="form-label">文章封面（选填）</label>
-              <div class="cover-area" @click="$refs.coverInput.click()">
-                <img v-if="coverUrl" :src="coverUrl" alt="封面预览" class="cover-preview" />
+              <div class="cover-area" @click="!uploadingCover && $refs.coverInput.click()">
+                <div v-if="uploadingCover" class="cover-uploading">
+                  <div class="upload-spinner"></div>
+                  <span>上传中...</span>
+                </div>
+                <img v-else-if="coverUrl" :src="coverUrl" alt="封面预览" class="cover-preview" />
                 <template v-else>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -207,7 +294,7 @@ const handleClose = () => {
               <textarea
                 v-model="excerpt"
                 class="excerpt-input"
-                placeholder="请输入文章摘要，帮助读者快速了解文章内容（至少20字）..."
+                placeholder="请输入文章摘要，帮助读者快速了解文章内容（至少10字）..."
                 maxlength="100"
                 rows="3"
               ></textarea>
@@ -419,6 +506,29 @@ const handleClose = () => {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .cover-uploading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #F97316;
+    font-size: 13px;
+
+    .upload-spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #f0f0f0;
+      border-top-color: #F97316;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 
   .cover-input {

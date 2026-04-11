@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import LeftSidebar from '@/components/home/LeftSidebar.vue'
 import ArticleFeed from '@/components/home/ArticleFeed.vue'
+import MyArticles from '@/components/home/MyArticles.vue'
 import RightSidebar from '@/components/home/RightSidebar.vue'
 import UserCard from '@/components/common/UserCard.vue'
 import defaultAvatar from '@/assets/user-avatar1.jpg'
@@ -15,6 +16,9 @@ const userStore = userInfoStore()
 
 // 搜索关键词
 const searchQuery = ref('')
+
+// 当前导航
+const activeNav = ref('home')
 
 // 是否已登录
 const isLoggedIn = computed(() => !!tokenStore.token)
@@ -57,8 +61,12 @@ const startCreate = () => {
 
 // 打开消息中心
 const openMessages = () => {
-  // TODO: 实现消息功能
   console.log('打开消息中心')
+}
+
+// 导航切换
+const handleNavChange = (navId) => {
+  activeNav.value = navId
 }
 </script>
 
@@ -116,10 +124,11 @@ const openMessages = () => {
     <!-- 主内容区 -->
     <main class="main-content">
       <!-- 左侧边栏组件 -->
-      <LeftSidebar />
+      <LeftSidebar @nav-change="handleNavChange" />
 
-      <!-- 文章流组件 -->
-      <ArticleFeed />
+      <!-- 文章流组件 / 我的文章组件 -->
+      <ArticleFeed v-if="activeNav === 'home'" />
+      <MyArticles v-else-if="activeNav === 'myArticles'" />
 
       <!-- 右侧边栏组件 -->
       <RightSidebar />

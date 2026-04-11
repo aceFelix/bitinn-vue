@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import Vditor from 'vditor'
 import 'vditor/dist/index.css'
 import defaultAvatar from '@/assets/user-avatar1.jpg'
+import request from '@/utils/request'
 import { useTokenStore } from '@/stores/token'
 import { userInfoStore } from '@/stores/userInfo'
 import PublishDialog from '@/components/article/PublishDialog.vue'
@@ -66,11 +67,27 @@ const goHome = () => {
 }
 
 // 保存草稿
-const saveDraft = () => {
+const saveDraft = async () => {
   const content = vditorInstance.value?.getValue() || ''
-  console.log('保存草稿:', { title: articleTitle.value, content })
-  // TODO: 调用 API 保存草稿
-  alert('草稿已保存')
+  try {
+    const result = await request.post('/article', {
+      title: articleTitle.value || '无标题草稿',
+      content,
+      coverImg: '',
+      excerpt: content.replace(/<[^>]+>/g, '').substring(0, 200),
+      state: '草稿',
+      categoryId: presetType ? parseInt(presetType) : null,
+      tagIds: []
+    })
+    if (result.code === 200) {
+      alert('草稿已保存')
+    } else {
+      alert(result.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存草稿失败:', error)
+    alert('保存失败，请稍后重试')
+  }
 }
 
 // 发布文章 - 打开发布弹窗
@@ -88,18 +105,27 @@ const publishArticle = () => {
 }
 
 // 确认发布
-const handlePublishConfirm = (publishData) => {
+const handlePublishConfirm = async (publishData) => {
   const content = vditorInstance.value?.getValue() || ''
-  console.log('发布文章:', {
-    title: articleTitle.value,
-    content,
-    type: publishData.type?.id,
-    tags: publishData.tags,
-    excerpt: publishData.excerpt,
-    coverUrl: publishData.coverUrl
-  })
-  alert('文章发布成功！')
-  router.push('/')
+  try {
+    const result = await request.post('/article', {
+      title: articleTitle.value,
+      content,
+      coverImg: publishData.coverUrl || '',
+      excerpt: publishData.excerpt || content.replace(/<[^>]+>/g, '').substring(0, 200),
+      state: '已发布',
+      categoryId: publishData.type?.id,
+      tagIds: publishData.tags?.map(t => typeof t === 'object' ? t.id : t).filter(Boolean)
+    })
+    if (result.code === 200) {
+      router.push('/')
+    } else {
+      alert(result.message || '发布失败')
+    }
+  } catch (error) {
+    console.error('发布文章失败:', error)
+    alert('发布失败，请稍后重试')
+  }
 }
 
 // 初始化 Vditor
